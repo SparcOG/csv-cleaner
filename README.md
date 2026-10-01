@@ -1,48 +1,58 @@
 # CSV Cleaner
 
-A small Python tool that removes fully empty rows and exact duplicate rows from a CSV file.
+A small Python tool for cleaning CSV files.
 
-## Features
+## What is CSV?
 
-- Keeps the header row
-- Removes fully empty rows
-- Removes exact duplicate rows
-- Creates a cleaned CSV file
-- Prints a short summary
+CSV is a table stored as text.
+
+- The first row contains column names.
+- Each following row contains one record.
+- Commas separate columns.
+- An empty row contains no data.
+- Duplicate rows contain the same values.
+- Dates may be written in different formats.
+
+For example, this project uses:
+
+```text
+name,email,signup_date,city
+Anna,anna@example.com,2026-09-01,Minsk
+Ivan,ivan@example.com,01/09/2026,Minsk
+Anna,anna@example.com,2026-09-01,Minsk
+
+Olga,olga@example.com,2026/09/03,Grodno
+Sergey,sergey@example.com,2026-09-04,Brest
+Ivan,ivan@example.com,01/09/2026,Minsk
+```
+
+## Project goal
+
+The script will create a new cleaned file and keep the original file unchanged:
+
+```text
+customers.csv → cleaned.csv
+```
+
+The final result should:
+
+1. Keep the original `customers.csv` unchanged.
+2. Remove empty rows.
+3. Remove complete duplicate rows.
+4. Convert dates to `YYYY-MM-DD`.
+5. Save the result as a separate `cleaned.csv` file.
+
+## Project structure
+
+```text
+sample_data/
+└── customers.csv
+```
 
 ## Requirements
 
 - Python 3
 
-## How to run
-
-1. Open Terminal in the project folder.
-2. Run:
-
-   ```bash
-   python3 clean_csv.py
-   ```
-
-3. The script reads `sample_input.csv`.
-4. The script creates `cleaned.csv`.
-
-## Example output
-
-```text
-Input rows: 6
-Removed empty rows: 2
-Removed duplicate rows: 1
-Saved rows: 3
-Output file: cleaned.csv
-```
-
-## Current limits
-
-- Works with CSV files only
-- Does not modify dates or cell values
-- Removes only exact duplicate rows
-- Uses the fixed input file name `sample_input.csv`
-
 ## Project status
 
-Version 1 complete.
+The project is being developed step by step.
