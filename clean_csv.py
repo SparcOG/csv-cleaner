@@ -1,56 +1,81 @@
-"""Remove fully empty rows and exact duplicate rows from a CSV file."""
-
 import csv
-from pathlib import Path
+import os
+from datetime import datetime
 
 
-def is_empty_row(row: list[str]) -> bool:
-    """Return True when every cell in a row is empty or contains only spaces."""
-    return all(cell.strip() == "" for cell in row)
+def parse_date(date_str):
+    """Convert a date to YYYY-MM-DD."""
+    date_formats = [
+        "%Y-%m-%d",
+        "%d/%m/%Y",
+        "%Y/%m/%d",
+    ]
+
+    date_str = date_str.strip()
+
+    for date_format in date_formats:
+        try:
+            parsed_date = datetime.strptime(date_str, date_format)
+            return parsed_date.strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+
+    return date_str
 
 
-def clean_csv(input_path: Path, output_path: Path) -> None:
-    """Read a CSV file, remove empty and duplicate rows, then write a new file."""
-    with input_path.open("r", newline="", encoding="utf-8") as input_file:
-        reader = csv.reader(input_file)
-        rows = list(reader)
-
-    if not rows:
-        print("The input file is empty.")
+def clean_csv(input_path, output_path):
+    """Clean a CSV file and save the result to a new file."""
+    if not os.path.exists(input_path):
+        print(f"Error: file not found: {input_path}")
         return
 
-    header = rows[0]
-    data_rows = rows[1:]
-
+    unique_rows = set()
     cleaned_rows = []
-    seen_rows = set()
-    removed_empty = 0
-    removed_duplicates = 0
 
-    for row in data_rows:
-        if is_empty_row(row):
-            removed_empty += 1
-            continue
+    with open(
+        input_path,
+        mode="r",
+        encoding="utf-8",
+        newline=""
+    ) as input_file:
+        reader = csv.reader(input_file)
 
-        row_key = tuple(row)
-        if row_key in seen_rows:
-            removed_duplicates += 1
-            continue
+        try:
+            header = next(reader)
+        except StopIteration:
+            print("Error: input file is empty.")
+            return
 
-        seen_rows.add(row_key)
-        cleaned_rows.append(row)
+        for row in reader:
+            if not row or all(cell.strip() == "" for cell in row):
+                continue
 
-    with output_path.open("w", newline="", encoding="utf-8") as output_file:
+            row = [cell.strip() for cell in row]
+
+            if len(row) > 2:
+                row[2] = parse_date(row[2])
+
+            row_tuple = tuple(row)
+
+            if row_tuple not in unique_rows:
+                unique_rows.add(row_tuple)
+                cleaned_rows.append(row)
+
+    with open(
+        output_path,
+        mode="w",
+        encoding="utf-8",
+        newline=""
+    ) as output_file:
         writer = csv.writer(output_file)
         writer.writerow(header)
         writer.writerows(cleaned_rows)
 
-    print(f"Input rows: {len(data_rows)}")
-    print(f"Removed empty rows: {removed_empty}")
-    print(f"Removed duplicate rows: {removed_duplicates}")
-    print(f"Saved rows: {len(cleaned_rows)}")
-    print(f"Output file: {output_path}")
+    print(f"Cleaning completed. Output saved to: {output_path}")
 
 
 if __name__ == "__main__":
-    clean_csv(Path("sample_input.csv"), Path("cleaned.csv"))
+    input_file = os.path.join("sample_data", "customers.csv")
+    output_file = "cleaned.csv"
+
+    clean_csv(input_file, output_file)
